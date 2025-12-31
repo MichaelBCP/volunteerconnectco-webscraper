@@ -2,7 +2,7 @@ from google import genai
 import time
 
 # Directly hardcode the key
-GEMINI_API_KEY = "AIzaSyB9VoqXic7MlqroiF4TyH5Ura8ZDuFji8o"
+GEMINI_API_KEY = "micheal dm me for this"
 
 # Initialize the Gemini client once
 client = genai.Client(api_key=GEMINI_API_KEY)
