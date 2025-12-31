@@ -1,23 +1,18 @@
 from google import genai
-from dotenv import load_dotenv
-import os
 import time
 
+# Directly hardcode the key
+GEMINI_API_KEY = "AIzaSyB9VoqXic7MlqroiF4TyH5Ura8ZDuFji8o"
+
+# Initialize the Gemini client once
+client = genai.Client(api_key=GEMINI_API_KEY)
+
 def answer_query(query, full_text):
-    load_dotenv()
-    gemini_api_key = os.getenv('GEMINI_API_KEY')
-
-    client = genai.Client(api_key=gemini_api_key)
-
     time.sleep(1)
-
     response = client.models.generate_content(
-        model="gemini-2.5-flash-lite", contents=query + full_text
+        model="gemini-2.5-flash-lite",
+        contents=query + "\n" + full_text
     )
-
     time.sleep(1)
-    print("✅")
+    print("✅ Query answered")
     return response.text
-
-if __name__ == '__main__':
-    print(answer_query('favorite drink', 'you like orange juice'))
