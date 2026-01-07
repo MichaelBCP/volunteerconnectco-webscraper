@@ -44,9 +44,9 @@ class GeminiOperator:
     class TimeOperator:
         def __init__(self):
             self.query_times = []
-            #Query times are in format (time.time(), datetime.date.today())
-            self.requests_per_minute = 10
-            self.requests_per_day = 20
+            #Query times are TimeSignature objects (time.time(), datetime.date.today())
+            self.requests_per_minute_limit = 10
+            self.requests_per_day_limit = 20
 
         def requests_this_minute(self):
             current_time = time.time()
@@ -68,8 +68,17 @@ class GeminiOperator:
 
             return day_requests
 
-        def time_authorized(self):
-            pass
+        def is_time_authorized(self):
+            if self.requests_this_minute() > self.requests_per_minute_limit:
+                print("Exceeded requests per minute")
+                return False
+
+            if self.requests_this_day() > self.requests_per_day_limit:
+                print("Exceeded requests per day")
+                return False
+
+            print("Within requests limit (hopefully)")
+            return True
 
 if __name__ == '__main__':
     print(answer_query('favorite drink', 'you like orange juice'))
