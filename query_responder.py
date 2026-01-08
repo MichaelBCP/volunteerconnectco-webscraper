@@ -1,40 +1,72 @@
+from idlelib.query import Query
+
 from google import genai
 from dotenv import load_dotenv
 import os
 import time
 import datetime
 
-# Directly hardcode the key
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-
-# Initialize the Gemini client once
-client = genai.Client(api_key=GEMINI_API_KEY)
-
-def answer_query(query, full_text):
-    time.sleep(1)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=query + "\n" + full_text
-    )
-    time.sleep(1)
-    print("✅ Query answered")
-    return response.text
-
 class GeminiOperator:
     def __init__(self):
-        self.apikey = os.getenv('GEMINI_API_KEY')
         self.time_op = GeminiOperator.TimeOperator()
         self.client = None
         self.client_setup()
+        self.query_queue = []
 
     def client_setup(self):
-        self.apikey = os.getenv('GEMINI_API_KEY')
-        self.client = genai.Client(api_key=self.apikey)
+        self.client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
+
+    def queue_query(self, query, full_text):
+        queued_query = self.Query(self.client, query, full_text)
+        self.query_queue.append(queued_query)
+
+    def answer_query(self, query, full_text):
+        if self.time_op.is_time_authorized():
+            new_query = self.Query(self.client, query, full_text)
+            self.time_op.add_query_time(new_query.time_signature)
+
+            return new_query.query_response()
+
+        else:
+            print("Not time authorized")
+            return "Exception"
+
+    def merged_query(self, queries, full_text):
+        full_query_text = "Answer each question separately, separate your answers with a single | between answers"
+        query_number = 0
+
+        for question in queries:
+            query_number += 1
+            full_query_text += question
+
+            if query_number != len(queries):
+                full_query_text += "|\n"
+
+        merged_answer = self.answer_query(full_query_text, full_text)
+
+        answers = merged_answer.split(sep="|")
+
+        if len(answers) == len(queries):
+            return answers
+
+        else:
+            print("Merged incorrectly")
+            return "Exception"
 
     class Query:
-        def __init__(self, query, full_text):
+        def __init__(self, gemini_client, query, full_text):
             self.query = query
             self.full_text = full_text
+            self.gemini_client = gemini_client
+            self.time_signature = self.TimeSignature
+
+        def query_response(self):
+            response = self.gemini_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=self.query + "\n" + self.full_text
+            )
+            print("✅ Query answered")
+            return response
 
         class TimeSignature:
             def __init__(self):
@@ -80,5 +112,9 @@ class GeminiOperator:
             print("Within requests limit (hopefully)")
             return True
 
+        def add_query_time(self, time_signature):
+            self.query_times.append(time_signature)
+
 if __name__ == '__main__':
-    print(answer_query('favorite drink', 'you like orange juice'))
+    newOperator = GeminiOperator()
+    print(newOperator.answer_query('favorite drink', 'you like orange juice'))
