@@ -20,12 +20,21 @@ class GeminiOperator:
         queued_query = self.Query(self.client, query, full_text)
         self.query_queue.append(queued_query)
 
+    def log_error(self, error):
+        with open("error_log.txt", "a") as error_file:
+            error_file.write(f"{error}\n")
+
     def answer_query(self, query, full_text):
         if self.time_op.is_time_authorized():
             new_query = self.Query(self.client, query, full_text)
             self.time_op.add_query_time(new_query.time_signature)
 
-            return new_query.query_response()
+            try:
+                return new_query.query_response()
+
+            except Exception as e:
+                print(f"Exception: {e}")
+                self.log_error(e)
 
         else:
             print("Not time authorized")
@@ -54,15 +63,16 @@ class GeminiOperator:
             return "Exception"
 
     class Query:
-        def __init__(self, gemini_client, query, full_text):
+        def __init__(self, gemini_client, query, full_text, model="gemini-2.5-flash"):
             self.query = query
             self.full_text = full_text
             self.gemini_client = gemini_client
             self.time_signature = self.TimeSignature
+            self.model = model
 
         def query_response(self):
             response = self.gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
+                model=self.model,
                 contents=self.query + "\n" + self.full_text
             )
             print("✅ Query answered")
