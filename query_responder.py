@@ -24,13 +24,17 @@ class GeminiOperator:
         with open("error_log.txt", "a") as error_file:
             error_file.write(f"{error}\n")
 
-    def answer_query(self, query, full_text):
+    def answer_query(self, query, full_text, strip_data=True):
         if self.time_op.is_time_authorized():
             new_query = self.Query(self.client, query, full_text)
             self.time_op.add_query_time(new_query.time_signature)
 
             try:
-                return new_query.query_response()
+                if strip_data:
+                    return new_query.query_response().text
+
+                else:
+                    return new_query.query_response()
 
             except Exception as e:
                 print(f"Exception: {e}")
@@ -63,7 +67,7 @@ class GeminiOperator:
             return "Exception"
 
     class Query:
-        def __init__(self, gemini_client, query, full_text, model="gemini-2.5-flash"):
+        def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
             self.query = query
             self.full_text = full_text
             self.gemini_client = gemini_client
@@ -77,11 +81,6 @@ class GeminiOperator:
             )
             print("✅ Query answered")
             return response
-
-        class TimeSignature:
-            def __init__(self):
-                self.epoch_time = time.time()
-                self.date_time = datetime.date.today()
 
     class TimeOperator:
         def __init__(self):
@@ -111,6 +110,18 @@ class GeminiOperator:
             return day_requests
 
         def is_time_authorized(self):
+            for time_signature in self.query_times:
+                if time_signature is TimeSignature():
+                    try:
+                        x = time_signature.epoch_time
+                        y = time_signature.date_time
+                    except Exception as e:
+                        self.query_times.remove(time_signature)
+                else:
+                    print("Invalid Signature")
+                    self.query_times.remove(time_signature)
+
+
             if self.requests_this_minute() > self.requests_per_minute_limit:
                 print("Exceeded requests per minute")
                 return False
@@ -125,6 +136,13 @@ class GeminiOperator:
         def add_query_time(self, time_signature):
             self.query_times.append(time_signature)
 
+class TimeSignature:
+    def __init__(self):
+        self.epoch_time = time.time()
+        self.date_time = datetime.date.today()
+
+
 if __name__ == '__main__':
     newOperator = GeminiOperator()
-    print(newOperator.answer_query('favorite drink', 'you like orange juice'))
+    #print(newOperator.answer_query('favorite drink', 'you like orange juice'))
+    #merged_query = newOperator.merged_query(("where is this event", "what time is the event"), "The event is the Abcd garden volunteering at Golden park. There will be 20 people and it starts at 9:30")
