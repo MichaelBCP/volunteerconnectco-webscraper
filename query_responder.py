@@ -65,7 +65,7 @@ class GeminiOperator:
             print("Merged incorrectly")
             return "Exception"
 
-    def answer_json_query(self, queries, field_texts, full_text):
+    def answer_json_query(self, full_text):
         class InfoBlock(BaseModel):
             opportunity_title: str = Field(description="Opportunity title, Make the title as informative as possible but don't keep it too long. You can make up/modify the title as you see fit -- whatever gives people the best info on this opportunity and what it entails")
             name_of_organization: str = Field(description="Organization name, Put the name in its simplest form. Don't abbreviate. San Jose Parks, Friends of Children with Special Needs, Martin Luther King Library")
@@ -80,9 +80,9 @@ class GeminiOperator:
             middle_school_high_school: str = Field(description="For high schoolers, middle schoolers, or both")
 
         if self.time_op.is_time_authorized():
-            new_query = self.Query(self.client, queries, full_text)
+            new_query = self.Query(self.client, "", full_text)
             self.time_op.add_query_time(new_query.time_signature)
-
+            new_query.json_query_response(InfoBlock)
 
     class Query:
         def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
@@ -100,7 +100,20 @@ class GeminiOperator:
             print("✅ Query answered")
             return response
 
-        #def json_query_response(self, field_texts):
+        def json_query_response(self, info_block):
+            prompt = "Please extract the volunteer opportunity info from the following text:\n" + self.full_text
+
+            response = self.gemini_client.models.generate_content(
+                model = self.model,
+                contents = prompt,
+                config = {
+                    "response_mime_type": "application/json",
+                    "response_json_schema": info_block.model_json_schema()
+                }
+            )
+
+            info = info_block.model_validate_json(response.text)
+            print(info)
 
     class TimeOperator:
         def __init__(self):
@@ -161,7 +174,20 @@ class TimeSignature:
         self.epoch_time = time.time()
         self.date_time = datetime.date.today()
 
+practice_text = """"
+Opportunity Title: Community Tech Literacy Mentor
+Opportunity Title Word Count: 4
+Name of Organization: BridgeForward Initiative
+
+The BridgeForward Initiative is offering a volunteer opportunity for students interested in technology, education, and community service. As a Community Tech Literacy Mentor, volunteers will support underserved community members by helping them build basic digital skills, including safe internet use, document creation, and introductory coding concepts. The goal of this program is to reduce the digital divide while giving volunteers hands-on experience in teaching and mentorship.
+
+This opportunity takes place in person at local community centers in San Jose, CA and Santa Clara, CA, with an optional virtual component for lesson planning and follow-up support. Volunteers typically serve in the afternoon (3:30–6:00 PM) on weekdays. The position runs from June 10 to August 15, with flexible scheduling and a minimum commitment of two hours per week. Applicants must be 14–18 years old, making this opportunity suitable for both middle school and high school students.
+
+No prior teaching experience is required, but volunteers should have a genuine interest in helping others learn. Passion areas include technology access, education equity, and community development. Helpful skills include basic computer literacy, communication skills, patience, and problem-solving, with bonus experience in coding, app development, or cybersecurity concepts. Training and materials are provided.
+"""
+
 if __name__ == '__main__':
     newOperator = GeminiOperator()
+    newOperator.answer_json_query(practice_text)
     #print(newOperator.answer_query('favorite drink', 'you like orange juice'))
     #merged_query = newOperator.merged_query(("where is this event", "what time is the event"), "The event is the Abcd garden volunteering at Golden park. There will be 20 people and it starts at 9:30")
