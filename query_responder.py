@@ -82,7 +82,9 @@ class GeminiOperator:
         if self.time_op.is_time_authorized():
             new_query = self.Query(self.client, "", full_text)
             self.time_op.add_query_time(new_query.time_signature)
-            new_query.json_query_response(InfoBlock)
+            return new_query.json_query_response(InfoBlock)
+        else:
+            return None
 
     class Query:
         def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
@@ -144,7 +146,7 @@ class GeminiOperator:
 
         def is_time_authorized(self):
             for time_signature in self.query_times:
-                if time_signature is TimeSignature():
+                if isinstance(time_signature, TimeSignature):
                     try:
                         x = time_signature.epoch_time
                         y = time_signature.date_time

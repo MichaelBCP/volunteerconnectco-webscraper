@@ -3,7 +3,7 @@ from scraping_tools import get_text_from_url, get_img_from_url
 from query_responder import GeminiOperator
 
 # Input and output files
-input_csv = "C:\\Users\\Michael\\Downloads\\volunteer_links_api (3).csv"
+input_csv = "C:\\Users\\mikeg\\Downloads\\volunteer_links_api.csv"
 output_csv = "volunteer_output.csv"
 
 newOperator = GeminiOperator()
