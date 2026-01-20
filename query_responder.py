@@ -1,10 +1,9 @@
-from idlelib.query import Query
-
 from google import genai
 from dotenv import load_dotenv
 import os
 import time
 import datetime
+from pydantic import BaseModel, Field
 
 class GeminiOperator:
     def __init__(self):
@@ -66,12 +65,31 @@ class GeminiOperator:
             print("Merged incorrectly")
             return "Exception"
 
+    def answer_json_query(self, queries, field_texts, full_text):
+        class InfoBlock(BaseModel):
+            opportunity_title: str = Field(description="Opportunity title, Make the title as informative as possible but don't keep it too long. You can make up/modify the title as you see fit -- whatever gives people the best info on this opportunity and what it entails")
+            name_of_organization: str = Field(description="Organization name, Put the name in its simplest form. Don't abbreviate. San Jose Parks, Friends of Children with Special Needs, Martin Luther King Library")
+            description: str = Field(description="Description should be a short paragraph. 3-5 sentences is fine. Add a short 1-2 sentence one if there is no description on the website, but try to find one. Make it as informative as possible. Focus on what this opportunity is doing and what the volunteer will get out of it.")
+            locations: str = Field(description="If it's in person, put the full address. If it's virtual, put virtual. If it's hybrid, put the address and say that it's sometimes virtual.")
+            when_in_day: str = Field(description="Time of day the opportunity is at")
+            position_date_start_end: str = Field(description="Date of opportunity, put ongoing if no specific dates, NEVER leave blank!")
+            age_requirement: str = Field(description="Age requirement, if none, say 'none'--do not put nothing, Always put a + after whatever number if necessary Examples: 15+, 12+, 13-18")
+            experience_needed: str = Field(description="Experience needed, same with age, put none if there's none but never leave blank, Possible skill requirements: Experienced with Adobe Design, Familiar Working with Children, etc.")
+            passion_areas: str = Field(description="Passion Areas, for example 'Community Building, Youth Services'")
+            specific_skills: str = Field(description="Specific skills needed")
+            middle_school_high_school: str = Field(description="For high schoolers, middle schoolers, or both")
+
+        if self.time_op.is_time_authorized():
+            new_query = self.Query(self.client, queries, full_text)
+            self.time_op.add_query_time(new_query.time_signature)
+
+
     class Query:
         def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
             self.query = query
             self.full_text = full_text
             self.gemini_client = gemini_client
-            self.time_signature = self.TimeSignature
+            self.time_signature = TimeSignature()
             self.model = model
 
         def query_response(self):
@@ -81,6 +99,8 @@ class GeminiOperator:
             )
             print("✅ Query answered")
             return response
+
+        #def json_query_response(self, field_texts):
 
     class TimeOperator:
         def __init__(self):
@@ -140,7 +160,6 @@ class TimeSignature:
     def __init__(self):
         self.epoch_time = time.time()
         self.date_time = datetime.date.today()
-
 
 if __name__ == '__main__':
     newOperator = GeminiOperator()
