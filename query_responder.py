@@ -113,7 +113,7 @@ class GeminiOperator:
             )
 
             info = info_block.model_validate_json(response.text)
-            print(info)
+            return info
 
     class TimeOperator:
         def __init__(self):
@@ -188,6 +188,6 @@ No prior teaching experience is required, but volunteers should have a genuine i
 
 if __name__ == '__main__':
     newOperator = GeminiOperator()
-    newOperator.answer_json_query(practice_text)
+    #newOperator.answer_json_query(practice_text)
     #print(newOperator.answer_query('favorite drink', 'you like orange juice'))
     #merged_query = newOperator.merged_query(("where is this event", "what time is the event"), "The event is the Abcd garden volunteering at Golden park. There will be 20 people and it starts at 9:30")
