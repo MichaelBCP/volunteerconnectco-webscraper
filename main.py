@@ -39,7 +39,7 @@ with open(output_csv, 'w', newline='', encoding='utf-8') as f_out:
         info = newOperator.answer_json_query(full_text)
 
         row = [info.name_of_organization, info.opportunity_title, url,
-               "placeholder", info.position_date_start_end, info.description,
+               get_img_from_url(url), info.position_date_start_end, info.description,
                info.age_requirement, info.experience_needed, info.locations,
                info.passion_areas, info.specific_skills]
         
