@@ -35,7 +35,7 @@ def get_img_from_url(url):
         soup = BeautifulSoup(response.text, 'html.parser')
         images = soup.find_all('img')
 
-        valid_exts = ('.png', '.jpg', '.jpeg', '.webp')
+        valid_extensions = ('.png', '.jpg', '.jpeg', '.webp')
         fallback_img = None
 
         for img in images:
@@ -45,7 +45,7 @@ def get_img_from_url(url):
 
             full_url = urljoin(url, src)
 
-            if full_url.lower().endswith(valid_exts):
+            if full_url.lower().endswith(valid_extensions):
                 return full_url  # Found usable image
             elif not fallback_img:
                 fallback_img = full_url  # Save first fallback
