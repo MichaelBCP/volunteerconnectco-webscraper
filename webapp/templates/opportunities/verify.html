@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Verify Opportunity{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="verify-container">
+    <div class="opportunity-details">
+      <h2>{{ opportunity['volunteer_title'] }}</h2>
+      <h3>{{ opportunity['organization_name'] }}</h3>
+      
+      {% if opportunity['image'] and not opportunity['image'].startswith('Image upload failed') %}
+        <img src="{{ opportunity['image'] }}" alt="{{ opportunity['organization_name'] }}" class="opportunity-image-large">
+      {% endif %}
+      
+      <div class="detail-section">
+        <h4>Basic Information</h4>
+        <p><strong>Position Date:</strong> {{ opportunity['position_date'] }}</p>
+        <p><strong>Location:</strong> {{ opportunity['address_virtual'] or 'Not specified' }}</p>
+        <p><strong>Age Requirement:</strong> {{ opportunity['age_requirement'] or 'None' }}</p>
+        <p><strong>Skill Requirements:</strong> {{ opportunity['skill_requirement'] or 'None' }}</p>
+        <p><strong>URL:</strong> <a href="{{ opportunity['url'] }}" target="_blank">{{ opportunity['url'] }}</a></p>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Description</h4>
+        <p>{{ opportunity['description'] }}</p>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Additional Details</h4>
+        <p><strong>Passion Areas:</strong> {{ opportunity['passion_areas'] or 'Not specified' }}</p>
+        <p><strong>Specific Skills:</strong> {{ opportunity['specific_skills'] or 'Not specified' }}</p>
+        <p><strong>Filters:</strong> {{ opportunity['filters'] or 'Not specified' }}</p>
+      </div>
+    </div>
+    
+    <div class="verification-form">
+      <h3>Verification Decision</h3>
+      <form method="post">
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select name="status" id="status" required>
+            <option value="">Select status...</option>
+            <option value="verified">Verified - Information is accurate</option>
+            <option value="rejected">Rejected - Information is incorrect or outdated</option>
+            <option value="needs_review">Needs Review - Uncertain, requires additional review</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="notes">Notes (Optional)</label>
+          <textarea name="notes" id="notes" rows="5" placeholder="Add any comments or observations about this opportunity..."></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Submit Verification</button>
+          <a href="{{ url_for('opportunities.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

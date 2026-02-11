@@ -3,7 +3,7 @@ from scraping_tools import get_text_from_url, get_img_from_url
 from query_responder import GeminiOperator
 
 # Input and output files
-input_csv = "C:\\Users\\mikeg\\Downloads\\volunteer_links_api.csv"
+input_csv = "C:\\Users\\Michael\\Downloads\\volunteer_links_api.csv"
 output_csv = "volunteer_output.csv"
 
 newOperator = GeminiOperator()
@@ -33,6 +33,9 @@ with open(output_csv, 'w', newline='', encoding='utf-8') as f_out:
     
     # Process each URL
     for url in links:
+        if links.index(url) < 22:
+            continue
+
         print(f"Processing {url} ...")
         full_text = get_text_from_url(url)
 

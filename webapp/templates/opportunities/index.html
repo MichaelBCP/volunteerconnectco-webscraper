@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}My Assigned Opportunities{% endblock %}</h1>
+  <div class="nav-links">
+    <a href="{{ url_for('opportunities.all_opportunities') }}">All Opportunities</a>
+    <a href="{{ url_for('opportunities.stats') }}">Statistics</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="opportunities-summary">
+    <p>You have {{ opportunities|length }} opportunity(ies) to verify.</p>
+  </div>
+
+  {% if opportunities %}
+    <div class="opportunities-grid">
+      {% for opportunity in opportunities %}
+        <div class="opportunity-card status-{{ opportunity['verification_status'] }}">
+          <div class="opportunity-header">
+            <h2>{{ opportunity['volunteer_title'] }}</h2>
+            <span class="status-badge">{{ opportunity['verification_status'] }}</span>
+          </div>
+          
+          <h3>{{ opportunity['organization_name'] }}</h3>
+          
+          {% if opportunity['image'] and not opportunity['image'].startswith('Image upload failed') %}
+            <img src="{{ opportunity['image'] }}" alt="{{ opportunity['organization_name'] }}" class="opportunity-image">
+          {% endif %}
+          
+          <div class="opportunity-meta">
+            <p><strong>Date:</strong> {{ opportunity['position_date'] }}</p>
+            <p><strong>Location:</strong> {{ opportunity['address_virtual'] or 'Not specified' }}</p>
+            <p><strong>Age Requirement:</strong> {{ opportunity['age_requirement'] or 'None' }}</p>
+          </div>
+          
+          <p class="opportunity-description">{{ opportunity['description'][:200] }}{% if opportunity['description']|length > 200 %}...{% endif %}</p>
+          
+          <div class="opportunity-actions">
+            <a href="{{ url_for('opportunities.detail', id=opportunity['id']) }}" class="btn btn-secondary">View Details</a>
+            {% if opportunity['verification_status'] == 'pending' %}
+              <a href="{{ url_for('opportunities.verify', id=opportunity['id']) }}" class="btn btn-primary">Verify Now</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No opportunities assigned to you yet.</p>
+      <a href="{{ url_for('opportunities.all_opportunities') }}">View all opportunities</a>
+    </div>
+  {% endif %}
+{% endblock %}

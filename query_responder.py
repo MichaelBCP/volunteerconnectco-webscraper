@@ -1,13 +1,11 @@
 from google import genai
-from dotenv import load_dotenv
 import os
-import time
-import datetime
 from pydantic import BaseModel, Field
+from rate_limiter import *
 
 class GeminiOperator:
     def __init__(self):
-        self.time_op = GeminiOperator.TimeOperator()
+        self.time_op = TimeOperator()
         self.client = None
         self.client_setup()
         self.query_queue = []
@@ -86,6 +84,36 @@ class GeminiOperator:
         else:
             return None
 
+    def answer_onetime_json_query(self, full_text):
+        class InfoBlock(BaseModel):
+            event_title: str = Field(description="Event Title")
+            name_of_organization: str = Field(description="Name of Organization")
+            additional_info: str | None = Field(default=None, description="Additional Info")
+            image_link: str | None = Field(default=None, description="Image Link")
+            alt_image_link: str | None = Field(default=None, description="Alt Image Link")
+            link: str | None = Field(default=None, description="External Link for event")
+            where: str = Field(description="Location of the event")
+            start_time: str = Field(description="Start Time (e.g., '9:00 AM')")
+            end_time: str = Field(description="End Time (e.g., '12:00 PM')")
+            date: str = Field(description="Date of event (MM/DD/YY)")
+            one_time: str | None = Field(default=None, description="OneTime (item) If it is a onetime oppurtunity put 'Yes'")
+            days: str | None = Field(default=None, description="Days")
+            other_filters: str | None = Field(default=None, description="Other filters")
+            passion_areas: str | None = Field(default=None, description="Passion Areas")
+            time_of_day: str | None = Field(default=None, description="Time of Day")
+
+        new_query = self.Query(self.client, "", full_text)
+        #self.time_op.add_query_time(new_query.time_signature)
+        return new_query.json_query_response(InfoBlock)
+
+    def is_onetime(self, full_text):
+        new_query = self.Query(self.client, "Is this an ongoing or a onetime oppurtunity? Answer with only 'onetime' if onetime oppurtunity or it includes one time oppurtunities or 'ongoing' if its not", full_text)
+        answer = new_query.query_response()
+        if 'onetime' in answer:
+            return True
+        else:
+            return False
+
     class Query:
         def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
             self.query = query
@@ -117,65 +145,6 @@ class GeminiOperator:
             info = info_block.model_validate_json(response.text)
             return info
 
-    class TimeOperator:
-        def __init__(self):
-            self.query_times = []
-            #Query times are TimeSignature objects (time.time(), datetime.date.today())
-            self.requests_per_minute_limit = 10
-            self.requests_per_day_limit = 20
-
-        def requests_this_minute(self):
-            current_time = time.time()
-            minute_requests = 0
-
-            for query_time in self.query_times:
-                if current_time - query_time.epoch_time < 60:
-                    minute_requests += 1
-
-            return minute_requests
-
-        def requests_this_day(self):
-            current_date = datetime.date.today()
-            day_requests = 0
-
-            for query_time in self.query_times:
-                if query_time.date_time == current_date:
-                    day_requests += 1
-
-            return day_requests
-
-        def is_time_authorized(self):
-            for time_signature in self.query_times:
-                if isinstance(time_signature, TimeSignature):
-                    try:
-                        x = time_signature.epoch_time
-                        y = time_signature.date_time
-                    except Exception as e:
-                        self.query_times.remove(time_signature)
-                else:
-                    print("Invalid Signature")
-                    self.query_times.remove(time_signature)
-
-
-            if self.requests_this_minute() > self.requests_per_minute_limit:
-                print("Exceeded requests per minute")
-                return False
-
-            if self.requests_this_day() > self.requests_per_day_limit:
-                print("Exceeded requests per day")
-                return False
-
-            print("Within requests limit (hopefully)")
-            return True
-
-        def add_query_time(self, time_signature):
-            self.query_times.append(time_signature)
-
-class TimeSignature:
-    def __init__(self):
-        self.epoch_time = time.time()
-        self.date_time = datetime.date.today()
-
 practice_text = """"
 Opportunity Title: Community Tech Literacy Mentor
 Opportunity Title Word Count: 4
@@ -191,5 +160,5 @@ No prior teaching experience is required, but volunteers should have a genuine i
 if __name__ == '__main__':
     newOperator = GeminiOperator()
     #newOperator.answer_json_query(practice_text)
-    #print(newOperator.answer_query('favorite drink', 'you like orange juice'))
+    print(newOperator.answer_query('favorite drink', 'you like orange juice'))
     #merged_query = newOperator.merged_query(("where is this event", "what time is the event"), "The event is the Abcd garden volunteering at Golden park. There will be 20 people and it starts at 9:30")

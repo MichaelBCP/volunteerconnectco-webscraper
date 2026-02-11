@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Verification Statistics{% endblock %}</h1>
+  <div class="nav-links">
+    <a href="{{ url_for('opportunities.index') }}">My Opportunities</a>
+    <a href="{{ url_for('opportunities.all_opportunities') }}">All Opportunities</a>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="stats-container">
+    <div class="stats-section">
+      <h2>Your Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ user_stats['total'] }}</div>
+          <div class="stat-label">Total Assigned</div>
+        </div>
+        <div class="stat-card stat-verified">
+          <div class="stat-value">{{ user_stats['verified'] }}</div>
+          <div class="stat-label">Verified</div>
+        </div>
+        <div class="stat-card stat-rejected">
+          <div class="stat-value">{{ user_stats['rejected'] }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+        <div class="stat-card stat-pending">
+          <div class="stat-value">{{ user_stats['pending'] }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card stat-review">
+          <div class="stat-value">{{ user_stats['needs_review'] }}</div>
+          <div class="stat-label">Needs Review</div>
+        </div>
+      </div>
+      
+      {% if user_stats['total'] > 0 %}
+        <div class="progress-bar">
+          <div class="progress-segment verified" style="width: {{ (user_stats['verified'] / user_stats['total'] * 100)|round }}%"></div>
+          <div class="progress-segment rejected" style="width: {{ (user_stats['rejected'] / user_stats['total'] * 100)|round }}%"></div>
+          <div class="progress-segment review" style="width: {{ (user_stats['needs_review'] / user_stats['total'] * 100)|round }}%"></div>
+        </div>
+        <div class="completion-rate">
+          <strong>Completion Rate:</strong> 
+          {{ ((user_stats['verified'] + user_stats['rejected'] + user_stats['needs_review']) / user_stats['total'] * 100)|round }}%
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="stats-section">
+      <h2>Overall Platform Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ overall_stats['total'] }}</div>
+          <div class="stat-label">Total Opportunities</div>
+        </div>
+        <div class="stat-card stat-verified">
+          <div class="stat-value">{{ overall_stats['verified'] }}</div>
+          <div class="stat-label">Verified</div>
+        </div>
+        <div class="stat-card stat-rejected">
+          <div class="stat-value">{{ overall_stats['rejected'] }}</div>
+          <div class="stat-label">Rejected</div>
+        </div>
+        <div class="stat-card stat-pending">
+          <div class="stat-value">{{ overall_stats['pending'] }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card stat-review">
+          <div class="stat-value">{{ overall_stats['needs_review'] }}</div>
+          <div class="stat-label">Needs Review</div>
+        </div>
+      </div>
+      
+      {% if overall_stats['total'] > 0 %}
+        <div class="progress-bar">
+          <div class="progress-segment verified" style="width: {{ (overall_stats['verified'] / overall_stats['total'] * 100)|round }}%"></div>
+          <div class="progress-segment rejected" style="width: {{ (overall_stats['rejected'] / overall_stats['total'] * 100)|round }}%"></div>
+          <div class="progress-segment review" style="width: {{ (overall_stats['needs_review'] / overall_stats['total'] * 100)|round }}%"></div>
+        </div>
+        <div class="completion-rate">
+          <strong>Overall Completion Rate:</strong> 
+          {{ ((overall_stats['verified'] + overall_stats['rejected'] + overall_stats['needs_review']) / overall_stats['total'] * 100)|round }}%
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
