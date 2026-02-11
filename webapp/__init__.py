@@ -32,6 +32,13 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
+    from . import opportunities
+    app.register_blueprint(opportunities.bp)
+    app.add_url_rule('/', endpoint='index')
+
+    from . import import_opportunities
+    import_opportunities.init_app(app)
+
     return app
 
 if __name__ == '__main__':

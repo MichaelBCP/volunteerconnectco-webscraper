@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Opportunity Details{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="detail-container">
+    <div class="opportunity-full-details">
+      <div class="status-header">
+        <h2>{{ opportunity['volunteer_title'] }}</h2>
+        <span class="status-badge status-{{ opportunity['verification_status'] }}">
+          {{ opportunity['verification_status'] }}
+        </span>
+      </div>
+      
+      <h3>{{ opportunity['organization_name'] }}</h3>
+      
+      {% if opportunity['image'] and not opportunity['image'].startswith('Image upload failed') %}
+        <img src="{{ opportunity['image'] }}" alt="{{ opportunity['organization_name'] }}" class="opportunity-image-large">
+      {% endif %}
+      
+      <div class="detail-section">
+        <h4>Basic Information</h4>
+        <table class="detail-table">
+          <tr>
+            <th>Position Date:</th>
+            <td>{{ opportunity['position_date'] }}</td>
+          </tr>
+          <tr>
+            <th>Location:</th>
+            <td>{{ opportunity['address_virtual'] or 'Not specified' }}</td>
+          </tr>
+          <tr>
+            <th>Age Requirement:</th>
+            <td>{{ opportunity['age_requirement'] or 'None' }}</td>
+          </tr>
+          <tr>
+            <th>Skill Requirements:</th>
+            <td>{{ opportunity['skill_requirement'] or 'None' }}</td>
+          </tr>
+          <tr>
+            <th>URL:</th>
+            <td><a href="{{ opportunity['url'] }}" target="_blank">{{ opportunity['url'] }}</a></td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Description</h4>
+        <p>{{ opportunity['description'] }}</p>
+      </div>
+      
+      <div class="detail-section">
+        <h4>Additional Details</h4>
+        <table class="detail-table">
+          <tr>
+            <th>Passion Areas:</th>
+            <td>{{ opportunity['passion_areas'] or 'Not specified' }}</td>
+          </tr>
+          <tr>
+            <th>Specific Skills:</th>
+            <td>{{ opportunity['specific_skills'] or 'Not specified' }}</td>
+          </tr>
+          <tr>
+            <th>Filters:</th>
+            <td>{{ opportunity['filters'] or 'Not specified' }}</td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="actions">
+        {% if opportunity['assigned_user_id'] == g.user['id'] and opportunity['verification_status'] == 'pending' %}
+          <a href="{{ url_for('opportunities.verify', id=opportunity['id']) }}" class="btn btn-primary">Verify This Opportunity</a>
+        {% endif %}
+        <a href="{{ url_for('opportunities.index') }}" class="btn btn-secondary">Back to My Opportunities</a>
+      </div>
+    </div>
+    
+    {% if verifications %}
+      <div class="verification-history">
+        <h3>Verification History</h3>
+        <div class="verifications-list">
+          {% for verification in verifications %}
+            <div class="verification-item">
+              <div class="verification-header">
+                <span class="username">{{ verification['username'] }}</span>
+                <span class="status-badge status-{{ verification['status'] }}">{{ verification['status'] }}</span>
+                <span class="timestamp">{{ verification['verified_at'] }}</span>
+              </div>
+              {% if verification['notes'] %}
+                <p class="verification-notes">{{ verification['notes'] }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
