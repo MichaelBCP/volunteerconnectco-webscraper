@@ -21,6 +21,7 @@ class TimeOperator:
         self.query_times = query_times
 
     def requests_this_minute(self):
+        return 0
         current_time = time.time()
         minute_requests = 0
 
@@ -31,6 +32,7 @@ class TimeOperator:
         return minute_requests
 
     def requests_this_day(self):
+        return 0
         current_date = datetime.date.today()
         day_requests = 0
 

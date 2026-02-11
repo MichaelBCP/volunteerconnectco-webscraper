@@ -1,5 +1,4 @@
 from google import genai
-from dotenv import load_dotenv
 import os
 from pydantic import BaseModel, Field
 from rate_limiter import *
@@ -85,6 +84,36 @@ class GeminiOperator:
         else:
             return None
 
+    def answer_onetime_json_query(self, full_text):
+        class InfoBlock(BaseModel):
+            event_title: str = Field(description="Event Title")
+            name_of_organization: str = Field(description="Name of Organization")
+            additional_info: str | None = Field(default=None, description="Additional Info")
+            image_link: str | None = Field(default=None, description="Image Link")
+            alt_image_link: str | None = Field(default=None, description="Alt Image Link")
+            link: str | None = Field(default=None, description="External Link for event")
+            where: str = Field(description="Location of the event")
+            start_time: str = Field(description="Start Time (e.g., '9:00 AM')")
+            end_time: str = Field(description="End Time (e.g., '12:00 PM')")
+            date: str = Field(description="Date of event (MM/DD/YY)")
+            one_time: str | None = Field(default=None, description="OneTime (item) If it is a onetime oppurtunity put 'Yes'")
+            days: str | None = Field(default=None, description="Days")
+            other_filters: str | None = Field(default=None, description="Other filters")
+            passion_areas: str | None = Field(default=None, description="Passion Areas")
+            time_of_day: str | None = Field(default=None, description="Time of Day")
+
+        new_query = self.Query(self.client, "", full_text)
+        #self.time_op.add_query_time(new_query.time_signature)
+        return new_query.json_query_response(InfoBlock)
+
+    def is_onetime(self, full_text):
+        new_query = self.Query(self.client, "Is this an ongoing or a onetime oppurtunity? Answer with only 'onetime' if onetime oppurtunity or it includes one time oppurtunities or 'ongoing' if its not", full_text)
+        answer = new_query.query_response()
+        if 'onetime' in answer:
+            return True
+        else:
+            return False
+
     class Query:
         def __init__(self, gemini_client, query, full_text, model="gemini-3-flash-preview"):
             self.query = query
@@ -130,6 +159,6 @@ No prior teaching experience is required, but volunteers should have a genuine i
 
 if __name__ == '__main__':
     newOperator = GeminiOperator()
-    newOperator.answer_json_query(practice_text)
-    #print(newOperator.answer_query('favorite drink', 'you like orange juice'))
+    #newOperator.answer_json_query(practice_text)
+    print(newOperator.answer_query('favorite drink', 'you like orange juice'))
     #merged_query = newOperator.merged_query(("where is this event", "what time is the event"), "The event is the Abcd garden volunteering at Golden park. There will be 20 people and it starts at 9:30")
