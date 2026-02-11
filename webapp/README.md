@@ -35,6 +35,17 @@ A Flask-based web application for managing and verifying volunteer opportunities
    flask import-opportunities volunteer_output.csv
    ```
 
+## Upgrading from Previous Version
+
+If you already have a database from a previous version:
+
+```bash
+export FLASK_APP=webapp
+flask migrate-db
+```
+
+This will update your existing database to the new schema while preserving all data. See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for more details.
+
 ## Running the Application
 
 ### Development Mode
@@ -212,6 +223,16 @@ Expected CSV columns:
 ## License
 
 See LICENSE file in the root directory.
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. **Database errors**: Run `flask migrate-db` to update your database schema
+2. **Module not found**: Ensure virtual environment is activated and dependencies installed
+3. **Port in use**: Use `flask run --port=5001` to use a different port
+
+See [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) for detailed solutions.
 
 ## Support
 

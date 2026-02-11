@@ -39,6 +39,9 @@ def create_app(test_config=None):
     from . import import_opportunities
     import_opportunities.init_app(app)
 
+    from . import migrate_db
+    migrate_db.init_app(app)
+
     return app
 
 if __name__ == '__main__':
